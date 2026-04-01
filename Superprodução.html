@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Estratégica - Concept BeSafe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root { --concept-blue: #003366; --gold-impact: #d4af37; }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 15px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
+        .gradient-text { background: linear-gradient(45deg, #003366, #0066cc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="p-6">
+
+    <header class="flex justify-between items-center mb-10 animate__animated animate__fadeInDown">
+        <div>
+            <h1 class="text-3xl font-bold gradient-text">Proposta de Otimização de Margem</h1>
+            <p class="text-gray-500">Análise de Fluxo, CPU e Eficiência Operacional</p>
+        </div>
+        <img src="https://www.conceptbesafe.com.br/wp-content/uploads/2021/08/logo-concept.png" alt="Concept BeSafe" class="h-16">
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glass-card p-6 border-l-4 border-red-500">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase">Superprodução/Mês</h3>
+            <p class="text-4xl font-bold text-red-600">+80 Carros</p>
+            <span class="text-xs text-red-400">Capacidade acima da demanda (WIP Ocioso)</span>
+        </div>
+        <div class="glass-card p-6 border-l-4 border-yellow-500">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase">Custo de Ineficiência (PJ)</h3>
+            <p class="text-4xl font-bold text-yellow-600">R$ 30.000</p>
+            <span class="text-xs text-gray-400">Pagamento por volume sem saída imediata</span>
+        </div>
+        <div class="glass-card p-6 border-l-4 border-green-500">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase">Potencial Redução CPU</h3>
+            <p class="text-4xl font-bold text-green-600">12% - 18%</p>
+            <span class="text-xs text-gray-400">Otimizando estoque e sincronismo</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="glass-card p-6">
+            <h2 class="text-xl font-bold mb-4">Gráfico Yamazumi (Balanceamento de Linha)</h2>
+            <canvas id="yamazumiChart"></canvas>
+            <p class="mt-4 text-sm text-gray-600 italic">Nota: A operação de Corte (Aço) está operando a 150% do Takt Time necessário, criando um buffer desnecessário que drena o fluxo de caixa.</p>
+        </div>
+        <div class="glass-card p-6">
+            <h2 class="text-xl font-bold mb-4">Simulação: Fluxo de Caixa vs Estoque</h2>
+            <canvas id="cashFlowChart"></canvas>
+            <div class="mt-4 flex gap-4">
+                <button onclick="updateScenario('ideal')" class="bg-blue-900 text-white px-4 py-2 rounded shadow hover:bg-blue-800 transition">Cenário Ideal (Lean)</button>
+                <button onclick="updateScenario('atual')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded shadow hover:bg-gray-300 transition">Cenário Atual</button>
+            </div>
+        </div>
+    </div>
+
+    <section class="glass-card p-8 mb-8">
+        <h2 class="text-2xl font-bold mb-6 text-blue-900">Por que produzir mais é perder dinheiro?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div>
+                <p class="text-gray-700 leading-relaxed">
+                    Atualmente, a célula de corte trabalha com mentalidade de <strong>produção em massa</strong>. Ao produzir 4 carros a mais por dia, estamos:
+                </p>
+                <ul class="list-disc ml-5 mt-4 space-y-2 text-gray-600">
+                    <li>Antecipando a compra de chapas de aço (Dreno de Caixa).</li>
+                    <li>Ocupando espaço físico precioso na fábrica.</li>
+                    <li>Pagando bônus de produtividade por peças que ficarão paradas.</li>
+                    <li>Aumentando o risco de obsolescência ou danos no estoque.</li>
+                </ul>
+            </div>
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                <h4 class="font-bold text-blue-900 mb-2">Visão de Engenharia:</h4>
+                <p class="text-sm text-blue-800">
+                    O <strong>Lead Time</strong> total não diminui porque o corte é rápido. O Lead Time é ditado pelo gargalo. Se a montagem final faz 8 carros/dia, o corte deve fazer 8 + 1 (buffer de segurança). Fazer 12 é criar um "cemitério de peças" que custa caro.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Yamazumi Chart
+        const ctxY = document.getElementById('yamazumiChart').getContext('2d');
+        new Chart(ctxY, {
+            type: 'bar',
+            data: {
+                labels: ['Desmontagem', 'Corte Aço (PJ)', 'Estrutura', 'Vidros', 'Montagem'],
+                datasets: [{
+                    label: 'Tempo de Operação (Horas)',
+                    data: [8, 14, 8, 8, 8],
+                    backgroundColor: ['#003366', '#ef4444', '#003366', '#003366', '#003366']
+                }, {
+                    label: 'Takt Time (Meta)',
+                    data: [8, 8, 8, 8, 8],
+                    type: 'line',
+                    borderColor: '#000',
+                    borderDash: [5, 5]
+                }]
+            }
+        });
+
+        // Cash Flow Chart
+        const ctxC = document.getElementById('cashFlowChart').getContext('2d');
+        let cashChart = new Chart(ctxC, {
+            type: 'line',
+            data: {
+                labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                datasets: [{
+                    label: 'Disponibilidade de Caixa (R$)',
+                    data: [100000, 85000, 70000, 55000],
+                    borderColor: '#ef4444',
+                    fill: false
+                }]
+            }
+        });
+
+        function updateScenario(type) {
+            if(type === 'ideal') {
+                cashChart.data.datasets[0].data = [100000, 105000, 110000, 120000];
+                cashChart.data.datasets[0].label = 'Disponibilidade de Caixa (Lean)';
+                cashChart.data.datasets[0].borderColor = '#10b981';
+            } else {
+                cashChart.data.datasets[0].data = [100000, 85000, 70000, 55000];
+                cashChart.data.datasets[0].label = 'Disponibilidade de Caixa (Atual)';
+                cashChart.data.datasets[0].borderColor = '#ef4444';
+            }
+            cashChart.update();
+        }
+    </script>
+</body>
+</html>
